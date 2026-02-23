@@ -30,4 +30,32 @@ export const resolvers = {
       }
     },
   },
+  Mutation: {
+    createQuestion: async (_parent, { input }, context) => {
+      try {
+        if (!context.user) {
+          throw new Error("Unauthorized");
+        }
+
+        const { title, body } = input;
+
+        if (!title || !body) {
+          throw new Error("Title and body are required");
+        }
+
+        const question = await Question.create({
+          title,
+          body,
+          createdBy: context.user.username,
+          userId: context.user.userId,
+          answers: [],
+        });
+
+        return question;
+      } catch (error) {
+        console.error("Error in createQuestion resolver:", error);
+        throw new Error("Failed to create question");
+      }
+    },
+  },
 };
