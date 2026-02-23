@@ -56,8 +56,6 @@ export const typeDefs = gql`
   input QuestionInput {
     title: String!
     body: String!
-    createdBy: String!
-    userId: ID!
   }
 
   type Query {
