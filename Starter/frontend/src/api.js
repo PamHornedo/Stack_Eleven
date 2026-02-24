@@ -1,55 +1,133 @@
-const API_BASE = 'http://localhost:4000/api';
+import { gql } from "@apollo/client";
+import { client } from "./apolloClient";
 
 export const api = {
-  register: async (payload) => {
-    const res = await fetch(`${API_BASE}/auth/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
+  register: async payload => {
+    const REGISTER = gql`
+      mutation ($input: RegisterInput!) {
+        register(input: $input) {
+          token
+          user {
+            id
+            username
+            email
+            createdAt
+          }
+        }
+      }
+    `;
+    const { data } = await client.mutate({
+      mutation: REGISTER,
+      variables: { input: payload },
     });
-    return res.json();
+    return data.register;
   },
 
-  login: async (payload) => {
-    const res = await fetch(`${API_BASE}/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
+  login: async payload => {
+    const LOGIN = gql`
+      mutation ($input: LoginInput!) {
+        login(input: $input) {
+          token
+          user {
+            id
+            username
+            email
+          }
+        }
+      }
+    `;
+    const { data } = await client.mutate({
+      mutation: LOGIN,
+      variables: { input: payload },
     });
-    return res.json();
+    return data.login;
   },
 
   getQuestions: async () => {
-    const res = await fetch(`${API_BASE}/questions`);
-    return res.json();
-  },
-
-  getQuestionById: async (id) => {
-    const res = await fetch(`${API_BASE}/questions/${id}`);
-    return res.json();
-  },
-
-  createQuestion: async (payload, token) => {
-    const res = await fetch(`${API_BASE}/questions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(payload),
+    const GET_QUESTIONS = gql`
+      query {
+        questions {
+          id
+          title
+          body
+          createdBy
+          createdAt
+          answers {
+            id
+            body
+            createdBy
+            createdAt
+          }
+        }
+      }
+    `;
+    const { data } = await client.query({
+      query: GET_QUESTIONS,
+      fetchPolicy: "no-cache",
     });
-    return res.json();
+    return data.questions;
   },
 
-  createAnswer: async (questionId, payload, token) => {
-    const res = await fetch(`${API_BASE}/questions/${questionId}/answers`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(payload),
+  getQuestionById: async id => {
+    const GET_QUESTION = gql`
+      query ($id: ID!) {
+        question(id: $id) {
+          id
+          title
+          body
+          createdBy
+          createdAt
+          answers {
+            id
+            body
+            createdBy
+            createdAt
+          }
+        }
+      }
+    `;
+    const { data } = await client.query({
+      query: GET_QUESTION,
+      variables: { id },
+      fetchPolicy: "no-cache",
     });
-    return res.json();
+    return data.question;
+  },
+
+  createQuestion: async payload => {
+    const CREATE_QUESTION = gql`
+      mutation ($input: CreateQuestionInput!) {
+        createQuestion(input: $input) {
+          id
+          title
+          body
+          createdBy
+          createdAt
+        }
+      }
+    `;
+    const { data } = await client.mutate({
+      mutation: CREATE_QUESTION,
+      variables: { input: payload },
+    });
+    return data.createQuestion;
+  },
+
+  createAnswer: async (questionId, payload) => {
+    const ADD_ANSWER = gql`
+      mutation ($questionId: ID!, $input: CreateAnswerInput!) {
+        addAnswer(questionId: $questionId, input: $input) {
+          id
+          body
+          createdBy
+          createdAt
+        }
+      }
+    `;
+    const { data } = await client.mutate({
+      mutation: ADD_ANSWER,
+      variables: { questionId, input: payload },
+    });
+    return data.addAnswer;
   },
 };
