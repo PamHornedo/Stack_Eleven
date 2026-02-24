@@ -1,5 +1,5 @@
 import { Query } from "mongoose";
-import Question from "../models/Question";
+import Question from "../models/Question.js";
 
 export const resolvers = {
   Query: {
