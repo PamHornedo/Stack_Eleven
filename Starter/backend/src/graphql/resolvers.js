@@ -1,3 +1,4 @@
+import { Query } from "mongoose";
 import Question from "../models/Question";
 
 export const resolvers = {
@@ -30,6 +31,7 @@ export const resolvers = {
       }
     },
   },
+
   Mutation: {
     createQuestion: async (_parent, { input }, context) => {
       try {
@@ -55,6 +57,40 @@ export const resolvers = {
       } catch (error) {
         console.error("Error in createQuestion resolver:", error);
         throw new Error("Failed to create question");
+      }
+    },
+
+    addAnswer: async (_parent, { questionId, input }, context) => {
+      try {
+        if (!context.user) {
+          throw new Error("Unauthorized");
+        }
+
+        const { body } = input;
+
+        if (!body) {
+          throw new Error("Body is required");
+        }
+
+        const question = Question.findById(questionId);
+
+        if (!question) {
+          throw new Error("Question not found");
+        }
+
+        const newAnswer = {
+          body,
+          createdBy: context.user.username,
+          userId: context.user.userId,
+        };
+
+        question.answers.push(newAnswer);
+        await question.save();
+
+        return question.answers[question.answers.length - 1];
+      } catch (error) {
+        console.error("Error in answer resolver:", error);
+        throw new Error("Failed to post answer");
       }
     },
   },

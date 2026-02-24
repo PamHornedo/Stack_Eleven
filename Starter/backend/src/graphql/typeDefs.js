@@ -1,5 +1,3 @@
-import { gql } from "apollo-server-express";
-
 export const typeDefs = gql`
   type Auth {
     token: String!
@@ -49,8 +47,6 @@ export const typeDefs = gql`
 
   input AnswerInput {
     body: String!
-    createdBy: String!
-    userId: ID!
   }
 
   input QuestionInput {
